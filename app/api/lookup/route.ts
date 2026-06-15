@@ -1,24 +1,25 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(req: NextRequest) {
   try {
     const { word, targetLang, nativeLang } = await req.json()
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      system: 'Respond with ONLY valid JSON, no markdown, no code blocks.',
-      messages: [{
-        role: 'user',
-        content: `Return JSON for the word "${word}" in ${targetLang}:
-{"word":"${word}","pron":"pronunciation/romanization","meaning":"meaning in ${nativeLang}","example":"${targetLang} example sentence — ${nativeLang} translation"}`
-      }]
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      generationConfig: { responseMimeType: 'application/json' },
     })
 
-    const raw = message.content[0].type === 'text' ? message.content[0].text : ''
+    const prompt = `Respond with ONLY valid JSON, no markdown, no code blocks.
+
+Return JSON for the word "${word}" in ${targetLang}:
+{"word":"${word}","pron":"pronunciation/romanization","meaning":"meaning in ${nativeLang}","example":"${targetLang} example sentence — ${nativeLang} translation"}`
+
+    const result = await model.generateContent(prompt)
+    const raw = result.response.text()
+
     const start = raw.indexOf('{'), end = raw.lastIndexOf('}')
     const jsonStr = start !== -1 && end > start ? raw.slice(start, end + 1) : raw
     const parsed = JSON.parse(jsonStr)
