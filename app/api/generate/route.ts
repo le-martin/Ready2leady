@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       : `Genre: ${genreLabels}`
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4000,
       system: 'You are a language learning story generator. Respond with ONLY valid JSON, no markdown, no code blocks, no explanation. Start directly with { and end with }.',
       messages: [{

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { word, targetLang, nativeLang } = await req.json()
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 300,
       system: 'Respond with ONLY valid JSON, no markdown, no code blocks.',
       messages: [{
